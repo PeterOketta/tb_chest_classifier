@@ -1,5 +1,3 @@
-# Dockerfile
-
 FROM python:3.9-slim
 
 # Set environment variables
@@ -15,8 +13,8 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /app
 
-# Create model directory
-RUN mkdir -p /app/model
+# Create model directory with proper permissions
+RUN mkdir -p /app/model && chmod 777 /app/model
 
 # Copy requirements.txt and install dependencies
 COPY requirements.txt .
@@ -25,8 +23,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project
 COPY . .
 
-# Download the model during build
-RUN python -c "from app.model_loader import download_model; download_model()"
+# Ensure proper permissions for the app directory
+RUN chmod -R 755 /app
+
+# Try to download the model during build
+RUN python -c "from app.model_loader import download_model; download_model()" || echo "Model download failed, will retry at runtime"
 
 EXPOSE 8000
 
