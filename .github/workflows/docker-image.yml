@@ -3,29 +3,37 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Log in to DockerHub
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Set up Docker Buildx (for multi-platform builds if needed)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+      # Build and push the Docker image
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
         with:
           context: .
-          file: app/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tb_chest_classifier:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/tb_chest_classifier:latest
+
+      # Optional step to clean up unused images
+      - name: Docker Image Cleanup
+        run: docker builder prune -f
