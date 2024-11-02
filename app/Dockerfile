@@ -8,14 +8,19 @@ COPY app/requirements.txt /app/app/requirements.txt
 RUN pip install --no-cache-dir -r /app/app/requirements.txt
 
 # Install wget to download the model
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get install -y curl
 
 # Create the model directory
 RUN mkdir -p /app/model
 
 # Download the model from GitHub Releases
-RUN wget -O /app/model/classification_model.keras \
+# Install curl instead of wget
+
+
+# Use curl to download the model
+RUN curl -L -o /app/model/classification_model.keras \
     "https://github.com/Marconi-Lab/TB-Screening/releases/download/classification_v2/1_classification_my_model.keras"
+
 
 # Copy the application code
 COPY app /app/app
