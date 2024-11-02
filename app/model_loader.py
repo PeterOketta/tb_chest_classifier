@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-MODEL_PATH = "/app/model/classification_model.keras"
+MODEL_PATH = "model/classification_model.keras"
 
 CLASS_NAMES = [" Active TB", "Inactive or Healed TB", "Normal","Others"]
 
