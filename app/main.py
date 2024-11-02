@@ -9,7 +9,7 @@ app = FastAPI()
 try:
     model = load_model()
 except FileNotFoundError as e:
-    raise RuntimeError(f"Model could not be loaded: {e}")
+    raise RuntimeError(f"The Model could not be loaded: {e}")
 
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
