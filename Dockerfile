@@ -12,6 +12,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download the model file using the pre-authenticated URL
+RUN mkdir -p model && \
+    curl -o model/classification_model.keras "https://storage.cloud.google.com/classification_model_tb/classification_model.keras"
+
 # Copy the entire project directory into the container
 COPY . .
 

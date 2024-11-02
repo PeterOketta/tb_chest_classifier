@@ -6,3 +6,4 @@ tensorflow
 monai
 pydicom
 requests
+google-cloud-storage
