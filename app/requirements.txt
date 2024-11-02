@@ -3,3 +3,6 @@ uvicorn
 pillow
 tensorflow
 numpy
+monai
+pydicom
+requests
