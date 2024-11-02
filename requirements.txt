@@ -1,9 +1,10 @@
 fastapi
-uvicorn[standard]
-pydantic
+uvicorn
+numpy
 pillow
 tensorflow
-monai
-pydicom
 requests
-
+python-multipart
+pydicom
+monai
+pydantic

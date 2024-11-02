@@ -1,22 +1,33 @@
-# Use an official Python image as the base
+# Dockerfile
+
 FROM python:3.9-slim
 
-# Set environment variables to avoid Python buffering issues
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
 
-# Copy requirements.txt into the container and install dependencies
+# Create model directory
+RUN mkdir -p /app/model
+
+# Copy requirements.txt and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project directory into the container
+# Copy the entire project
 COPY . .
 
-# Expose the port FastAPI will run on
+# Download the model during build
+RUN python -c "from app.model_loader import download_model; download_model()"
+
 EXPOSE 8000
 
-# Define the command to run the application with uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
