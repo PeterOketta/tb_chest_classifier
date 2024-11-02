@@ -32,7 +32,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/tb_chest_classifier:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tb_chest_classifier:latest
 
       # Optional step to clean up unused images
       - name: Docker Image Cleanup
