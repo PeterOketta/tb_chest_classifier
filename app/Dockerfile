@@ -21,8 +21,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the app source code
 COPY app/ app/
 
+# Create the model directory
+RUN mkdir -p /app/model
+
 # Download the model from GCP bucket
-# Replace `YOUR_BUCKET_NAME` and `YOUR_MODEL_FILE_NAME`
 RUN wget -O $MODEL_PATH "https://storage.googleapis.com/classification_model_tb/classification_model.keras"
 
 # Expose the port FastAPI will run on
