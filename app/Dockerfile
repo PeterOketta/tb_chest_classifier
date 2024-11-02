@@ -1,29 +1,31 @@
-# Dockerfile
+# Use an official Python image as a base
 FROM python:3.9-slim
 
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV MODEL_PATH=/app/model/classification_model.keras
+
+# Install required packages and tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
 WORKDIR /app
 
-# Install dependencies
-COPY app/requirements.txt /app/app/requirements.txt
-RUN pip install --no-cache-dir -r /app/app/requirements.txt
+# Copy requirements and install them
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install wget to download the model
-RUN apt-get update && apt-get install -y curl
+# Copy the app source code
+COPY app/ app/
 
-# Create the model directory
-RUN mkdir -p /app/model
+# Download the model from GCP bucket
+RUN wget -O $MODEL_PATH "https://storage.googleapis.com/classification_model_tb/classification_model.keras"
 
-# Download the model from GitHub Releases
-# Install curl instead of wget
+# Expose the port FastAPI will run on
+EXPOSE 8000
 
-
-# Use curl to download the model
-RUN curl -L -o /app/model/classification_model.keras \
-    "https://github.com/Marconi-Lab/TB-Screening/releases/download/classification_v2/1_classification_my_model.keras"
-
-
-# Copy the application code
-COPY app /app/app
-
-# Set up the entry point to run the FastAPI application
+# Set the default command to run the FastAPI server
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
