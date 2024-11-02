@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-pydantic
-pillow
-tensorflow
-monai
-pydicom
-requests
