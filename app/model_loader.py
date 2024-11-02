@@ -8,18 +8,22 @@ import numpy as np
 MODEL_PATH = "model/classification_model.keras"
 CLASS_NAMES = ["Active TB", "Inactive or Healed TB", "Normal", "Others"]
 
-# Pre-authenticated URL to download the model
-MODEL_URL = "https://storage.cloud.google.com/classification_model_tb/classification_model.keras"
+# Google Drive direct download link with your file's ID
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1dohEJ5qB1AM-M_jNbFPtRYKisEdts5hx"
 
 def download_model():
-    """Download the model from a pre-authenticated URL if it's not present."""
+    """Download the model from Google Drive if it's not present."""
     if not os.path.exists(MODEL_PATH):
         os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-        print("Downloading model...")
-        response = requests.get(MODEL_URL)
+        print("Downloading model from Google Drive...")
+        
+        # Streaming the download to handle large files
+        response = requests.get(MODEL_URL, stream=True)
         if response.status_code == 200:
             with open(MODEL_PATH, 'wb') as f:
-                f.write(response.content)
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:  # Filter out keep-alive chunks
+                        f.write(chunk)
             print("Model downloaded successfully.")
         else:
             raise RuntimeError(f"Failed to download model: {response.status_code}")
