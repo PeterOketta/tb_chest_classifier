@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, HttpUrl
 import numpy as np
+from PIL import Image
+from fastapi import File, UploadFile
 from monai.transforms import (
     LoadImage,
     Resize,
@@ -8,7 +10,7 @@ from monai.transforms import (
 )
 import requests
 import tensorflow as tf
-from app.model_loader import load_model, CLASS_NAMES
+from app.model_loader import load_model, CLASS_NAMES,preprocess_image
 import tempfile
 import os
 import pydicom
@@ -89,7 +91,7 @@ def preprocess_dicom_slice(dicom_data: bytes):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing DICOM file: {str(e)}")
 
-@app.post("/predict/")
+@app.post("/predict-dicom/")
 async def predict(url_data: ImageURL):
     """
     Predict from a single DICOM slice using embedded authentication and MONAI transforms.
@@ -115,13 +117,13 @@ async def predict(url_data: ImageURL):
         confidence = prediction[0][predicted_index]
         
         return {
-            "prediction": predicted_class,
-            "confidence": float(confidence),
-            "image_info": {
-                "width": preprocessed_image.shape[1],
-                "height": preprocessed_image.shape[2],
-                "channels": preprocessed_image.shape[3]
-            }
+            "prediction": predicted_class
+            # "confidence": float(confidence),
+            # "image_info": {
+            #     "width": preprocessed_image.shape[1],
+            #     "height": preprocessed_image.shape[2],
+            #     "channels": preprocessed_image.shape[3]
+            # }
         }
     
     except HTTPException as http_exc:
@@ -132,6 +134,44 @@ async def predict(url_data: ImageURL):
             detail=f"Internal server error: {str(e)}"
         )
 
+@app.post("/predict-image/")
+async def predict_image(file: UploadFile = File(...)):
+    """
+    Predict from an uploaded image file (PNG, JPEG, or JPG).
+    """
+    try:
+        # Ensure the file is in an accepted format
+        if file.content_type not in ["image/jpeg", "image/png"]:
+            raise HTTPException(status_code=400, detail="Invalid image format. Only PNG, JPEG, and JPG are allowed.")
+
+        # Load the image using PIL
+        image = Image.open(file.file)
+        
+        # Preprocess the image
+        preprocessed_image = preprocess_image(image)
+        
+        # Run prediction
+        prediction = model.predict(preprocessed_image)
+        predicted_index = np.argmax(prediction, axis=1)[0]
+        predicted_class = CLASS_NAMES[predicted_index]
+        confidence = prediction[0][predicted_index]
+        
+        return {
+            "prediction": predicted_class,
+            "confidence": float(confidence)
+            # "image_info": {
+            #     "width": preprocessed_image.shape[1],
+            #     "height": preprocessed_image.shape[2],
+            #     "channels": preprocessed_image.shape[3]
+            # }
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing image file: {str(e)}"
+        )
+        
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "model_loaded": model is not None}
